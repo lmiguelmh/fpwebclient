@@ -1,0 +1,31 @@
+{
+  "name": "mwwd2-web",
+  "version": "2.0.0",
+  "description": "mwwd2 resources web portal",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "clean": "rmdir /s /q \"bin/js\" && mkdir \"bin/js\"",
+    "compile": "node_modules/.bin/babel --no-comments src/js --out-dir bin/js && browserify bin/js/FPApplication.js -o bin/js/FPApplication.min.js",
+    "server": "httpserver"
+  },
+  "author": "lmiguelmh",
+  "license": "lmiguelmh",
+  "devDependencies": {
+    "@babel/cli": "^7.2.3",
+    "@babel/core": "^7.3.4",
+    "@babel/preset-env": "^7.3.4",
+    "babel-core": "^6.26.3",
+    "babel-preset-es2015": "^6.24.1",
+    "gulp-strip-comments": "^2.5.2"
+  },
+  "dependencies": {
+    "@babel/polyfill": "^7.2.5",
+    "core-js": "^2.6.5",
+    "socket.io": "^2.2.0",
+    "terser": "^3.17.0",
+    "url-polyfill": "^1.1.5"
+  }
+}
