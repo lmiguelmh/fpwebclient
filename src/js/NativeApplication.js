@@ -46,7 +46,7 @@ class NativeApplication {
         return args;
     }
 
-    connect(args, connectStartTime) {
+    _connectWithoutHandshake(args, connectStartTime) {
         let launcherArgs = this.processInput(args);
         if ((new Date).getTime() > connectStartTime + launcherArgs.timeout) {
             this.onError("TimeoutException");
@@ -57,7 +57,51 @@ class NativeApplication {
             try {
                 const localAppUrl = `ws://localhost:${launcherArgs.port}/`;
                 const _this = this;
-                Logger.log("connecting to: " + localAppUrl);
+                Logger.log(`connecting to: ${localAppUrl}`);
+                let connection = new WebSocket(localAppUrl);
+                connection.onopen = function (event) {
+                    Logger.log({'onopen': event});
+                    setTimeout(function () {
+                        _this.connection = connection;
+                        _this.onConnect();
+                    }, 10);
+                };
+                connection.onmessage = function (event) {
+                    Logger.log({'onmessage': event});
+                    _this.onMessage(event.data);
+                };
+                connection.onerror = function (event) {
+                    Logger.log({'onerror': event});
+                    _this.connect(args, connectStartTime);
+                };
+            } catch (e) {
+                // in case of exception when constructing Websocket object
+                // try Proxy-Window i.e. Firefox SecurityException https-http
+                this.onError(e);
+            }
+        }, timeBetweenTries);
+    }
+
+    connect(args, connectStartTime, makeInitialHandshake = true) {
+        if (makeInitialHandshake) {
+            this._connectWithHandshake(args, connectStartTime);
+        } else {
+            this._connectWithoutHandshake(args, connectStartTime);
+        }
+    }
+
+    _connectWithHandshake(args, connectStartTime) {
+        let launcherArgs = this.processInput(args);
+        if ((new Date).getTime() > connectStartTime + launcherArgs.timeout) {
+            this.onError("TimeoutException");
+            return;
+        }
+        const timeBetweenTries = 250;
+        setTimeout(() => {
+            try {
+                const localAppUrl = `ws://localhost:${launcherArgs.port}/`;
+                const _this = this;
+                Logger.log(`connecting to: ${localAppUrl}`);
                 let connection = new WebSocket(localAppUrl);
                 connection.onopen = function (event) {
                     Logger.log({'onopen': event});

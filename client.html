@@ -25,21 +25,12 @@
 
 <script>
     function doClick() {
-        FPApplication.capture({application: ["futronic", "-m", "Pulsa dedo", "-t", "45000"]})
+        FPApplication.execute({"command": ".\\futronic\\x64\\futronic.exe", "message": "PULSE SU MEÑIQUE IZQUIERDO"})
             .then((response) => {
                 // console.log(response);
             }).catch((error) => {
             // console.log(error);
         });
-        // NativeApplication.launch(
-        //     {launcherArgs: {port: 42000, timeout: 5000, child: "desklayer_server"}, applicationArgs: {application: ["futronic", "-m", "Pulsa dedo", "-t", "45000"]}},
-        //     function (response) {
-        //         console.log(response);
-        //     },
-        //     function (error) {
-        //         console.log(error);
-        //     }
-        // );
     }
 </script>
 </body>
