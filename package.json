@@ -8,7 +8,7 @@
   },
   "scripts": {
     "clean": "rmdir /s /q \"bin/js\" && mkdir \"bin/js\"",
-    "compile": "node_modules/.bin/babel --no-comments src/js --out-dir bin/js && browserify bin/js/FPApplication.js -o bin/js/FPApplication.min.js",
+    "compile": "node_modules/.bin/babel --no-comments --minified src/js --out-dir bin/js && browserify bin/js/FPApplication.js -o assets/js/FPApplication.min.js",
     "server": "httpserver"
   },
   "author": "lmiguelmh",
@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "@babel/polyfill": "^7.2.5",
+    "bulma": "^0.7.5",
     "core-js": "^2.6.5",
     "socket.io": "^2.2.0",
     "terser": "^3.17.0",
