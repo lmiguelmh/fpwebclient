@@ -10,7 +10,7 @@ const URIUtils = require('./URIUtils');
 const Logger = require('./Logger');
 
 class NativeApplication {
-    constructor(onConnect, onMessage, onError) {
+    constructor(onConnect, onMessage, onError, onFirstConnectionDelayed = undefined, timeForFirstConnectionDelayed = 250) {
         if (onConnect === undefined) {
             throw new Error("IllegalOnConnectArgumentException");
         }
@@ -24,6 +24,9 @@ class NativeApplication {
         this.onConnect = onConnect;
         this.onMessage = onMessage;
         this.onError = onError;
+        this.onFirstConnectionDelayed = onFirstConnectionDelayed;
+        this.timeForFirstConnectionDelayed = timeForFirstConnectionDelayed;
+        this.firstConnectionIsDelayedChecked = false;
         this.connection = undefined;
     }
 
@@ -46,6 +49,18 @@ class NativeApplication {
         return args;
     }
 
+    checkIfFirstConnectionIsDelayed() {
+        if (!this.firstConnectionIsDelayedChecked) {
+            setTimeout(() => {
+                if (!this.connection) {
+                    Logger.log("it seems there is not an available connection (connection delayed)...");
+                    this.onFirstConnectionDelayed && this.onFirstConnectionDelayed();
+                }
+            }, this.timeForFirstConnectionDelayed);
+            this.firstConnectionIsDelayedChecked = true;
+        }
+    }
+
     _connectWithoutHandshake(args, connectStartTime) {
         let launcherArgs = this.processInput(args);
         if ((new Date).getTime() > connectStartTime + launcherArgs.timeout) {
@@ -59,6 +74,7 @@ class NativeApplication {
                 const _this = this;
                 Logger.log(`connecting to: ${localAppUrl}`);
                 let connection = new WebSocket(localAppUrl);
+                this.checkIfFirstConnectionIsDelayed();
                 connection.onopen = function (event) {
                     Logger.log({'onopen': event});
                     setTimeout(function () {
@@ -82,14 +98,6 @@ class NativeApplication {
         }, timeBetweenTries);
     }
 
-    connect(args, connectStartTime, makeInitialHandshake = true) {
-        if (makeInitialHandshake) {
-            this._connectWithHandshake(args, connectStartTime);
-        } else {
-            this._connectWithoutHandshake(args, connectStartTime);
-        }
-    }
-
     _connectWithHandshake(args, connectStartTime) {
         let launcherArgs = this.processInput(args);
         if ((new Date).getTime() > connectStartTime + launcherArgs.timeout) {
@@ -103,6 +111,7 @@ class NativeApplication {
                 const _this = this;
                 Logger.log(`connecting to: ${localAppUrl}`);
                 let connection = new WebSocket(localAppUrl);
+                this.checkIfFirstConnectionIsDelayed();
                 connection.onopen = function (event) {
                     Logger.log({'onopen': event});
                 };
@@ -132,6 +141,14 @@ class NativeApplication {
                 this.onError(e);
             }
         }, timeBetweenTries);
+    }
+
+    connect(args, connectStartTime, makeInitialHandshake = true) {
+        if (makeInitialHandshake) {
+            this._connectWithHandshake(args, connectStartTime);
+        } else {
+            this._connectWithoutHandshake(args, connectStartTime);
+        }
     }
 
     send(message) {

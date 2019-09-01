@@ -34,14 +34,13 @@ class FPApplication {
     }
     */
 
-    static execute(applicationArgs) {
+    // the app shouldn't change the ports, this is only for dummy
+    static execute(applicationArgs, child = "core42-device", port = 42000, timeout = 5000) {
         return new Promise((resolve, reject) => {
             try {
                 // launch uri protocol
                 //const launcherArgs = {port: 42000, timeout: 5000, child: "desklayer_server"};
-                const launcherArgs = {port: 42000, timeout: 5000, child: "core42-device"};
-                const uri = URIUtils.buildUri(vars.URI_PROTOCOL, "fp", launcherArgs);
-                URIUtils.launch(uri);
+                const launcherArgs = {port: port, timeout: timeout, child: child};
                 // try connections to local ws until timeout
                 let nativeApplication = new NativeApplication(function () {
                     nativeApplication.send(JSON.stringify(applicationArgs));
@@ -49,7 +48,10 @@ class FPApplication {
                     resolve(message);
                 }, function (error) {
                     reject(error);
-                });
+                }, function () {
+                    const uri = URIUtils.buildUri(vars.URI_PROTOCOL, "fp", launcherArgs);
+                    URIUtils.launch(uri);
+                }, 250);
                 nativeApplication.connect(launcherArgs, (new Date).getTime(), false);
             } catch (e) {
                 reject(e);
