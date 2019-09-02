@@ -88,7 +88,7 @@ class NativeApplication {
                 };
                 connection.onerror = function (event) {
                     Logger.log({'onerror': event});
-                    _this.connect(args, connectStartTime);
+                    _this._connectWithoutHandshake(args, connectStartTime);
                 };
             } catch (e) {
                 // in case of exception when constructing Websocket object
@@ -133,7 +133,7 @@ class NativeApplication {
                 };
                 connection.onerror = function (event) {
                     Logger.log({'onerror': event});
-                    _this.connect(args, connectStartTime);
+                    _this._connectWithHandshake(args, connectStartTime);
                 };
             } catch (e) {
                 // in case of exception when constructing Websocket object
