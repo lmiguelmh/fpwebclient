@@ -62,3 +62,4 @@ class FPApplication {
 }
 
 global.FPApplication = FPApplication;
+module.exports = FPApplication;
