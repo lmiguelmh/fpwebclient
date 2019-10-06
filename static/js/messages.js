@@ -1,0 +1,1 @@
+"use strict";var messages={"DownloadFileFailed":"No es posible descargar archivo de URL"};module.exports=messages;
