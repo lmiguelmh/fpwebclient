@@ -5,8 +5,9 @@
  **/
 
 const vars = {
-    VERSION: "1.0.0",
+    VERSION: "1.1",
     URI_PROTOCOL: "core42",
+    DEVICE_API_NATIVE_APP_PORT: 42000,
     DEBUG: true
 };
 

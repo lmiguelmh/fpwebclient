@@ -14,4 +14,4 @@ Demo project to launch and communicate with desktop applications.
     npm run server
     ````
 
--  Browse to [localhost](http://localhost:8080/)
+- Browse to [localhost](http://localhost:8080/)

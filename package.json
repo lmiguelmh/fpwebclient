@@ -7,7 +7,7 @@
     "doc": "docs"
   },
   "scripts": {
-    "compile": "node_modules/.bin/babel --no-comments --minified src/js --out-dir static/js && browserify static/js/FPApplication.js -o static/js/FPApplication.min.js && browserify static/js/Matcher.js -o static/js/Matcher.min.js",
+    "compile": "node_modules/.bin/babel --no-comments --minified src/js --out-dir static/js && browserify static/js/FPApplication.js -o static/js/FPApplication.min.js && browserify static/js/Matcher.js -o static/js/Matcher.min.js && browserify static/js/ReadConfigNativeApp.js -o static/js/ReadConfigNativeApp.min.js",
     "server": "cd static && httpserver"
   },
   "author": "lmiguelmh",

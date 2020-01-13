@@ -10,7 +10,7 @@ const URIUtils = require('./URIUtils');
 const Logger = require('./Logger');
 
 class NativeApplication {
-    constructor(onConnect, onMessage, onError, onFirstConnectionDelayed = undefined, timeForFirstConnectionDelayed = 250) {
+    constructor(onConnect, onMessage, onClose, onError, onFirstFailedConnection = undefined, timeoutForFirstFailedConnection = 250) {
         if (onConnect === undefined) {
             throw new Error("IllegalOnConnectArgumentException");
         }
@@ -20,12 +20,19 @@ class NativeApplication {
         if (onError === undefined) {
             throw new Error("IllegalOnErrorArgumentException");
         }
-        // onConnect will be called after handshake (receiving DesktopHello and sending WebHello)
+        if (onClose === undefined) {
+            throw new Error("IllegalOnCloseArgumentException");
+        }
+
+        // onConnect will be called after connection or handshake (if enabled) (receiving DesktopHello and sending WebHello)
         this.onConnect = onConnect;
         this.onMessage = onMessage;
         this.onError = onError;
-        this.onFirstConnectionDelayed = onFirstConnectionDelayed;
-        this.timeForFirstConnectionDelayed = timeForFirstConnectionDelayed;
+        this.onClose = onClose;
+
+        // onFirstFailedConnection is called when the first connection cant be done, maybe the local server is down
+        this.onFirstFailedConnection = onFirstFailedConnection;
+        this.timeoutForFirstFailedConnection = timeoutForFirstFailedConnection;
         this.firstConnectionIsDelayedChecked = false;
         this.connection = undefined;
     }
@@ -53,10 +60,10 @@ class NativeApplication {
         if (!this.firstConnectionIsDelayedChecked) {
             setTimeout(() => {
                 if (!this.connection) {
-                    Logger.log("it seems there is not an available connection (connection delayed)...");
-                    this.onFirstConnectionDelayed && this.onFirstConnectionDelayed();
+                    Logger.log("it seems there is not an available connection (first connection has failed)...");
+                    this.onFirstFailedConnection && this.onFirstFailedConnection();
                 }
-            }, this.timeForFirstConnectionDelayed);
+            }, this.timeoutForFirstFailedConnection);
             this.firstConnectionIsDelayedChecked = true;
         }
     }
@@ -71,29 +78,33 @@ class NativeApplication {
         setTimeout(() => {
             try {
                 const localAppUrl = `ws://localhost:${launcherArgs.port}/`;
-                const _this = this;
+                const self = this;
                 Logger.log(`connecting to: ${localAppUrl}`);
                 let connection = new WebSocket(localAppUrl);
                 this.checkIfFirstConnectionIsDelayed();
                 connection.onopen = function (event) {
                     Logger.log({'onopen': event});
                     setTimeout(function () {
-                        _this.connection = connection;
-                        _this.onConnect();
+                        self.connection = connection;
+                        self.onConnect && self.onConnect();
                     }, 10);
                 };
                 connection.onmessage = function (event) {
                     Logger.log({'onmessage': event});
-                    _this.onMessage(event.data);
+                    self.onMessage && self.onMessage(event.data);
                 };
                 connection.onerror = function (event) {
                     Logger.log({'onerror': event});
-                    _this._connectWithoutHandshake(args, connectStartTime);
+                    self._connectWithoutHandshake(args, connectStartTime);
+                };
+                connection.onclose = function (event) {
+                    Logger.log({'onclose': event});
+                    self.onClose && self.onClose(event);
                 };
             } catch (e) {
                 // in case of exception when constructing Websocket object
                 // try Proxy-Window i.e. Firefox SecurityException https-http
-                this.onError(e);
+                this.onError && this.onError(e);
             }
         }, timeBetweenTries);
     }

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>FingerprintWebClient Demo Page</title>
     <script src="js/FPApplication.min.js" type="text/javascript"></script>
+    <script src="js/ReadConfigNativeApp.min.js" type="text/javascript"></script>
     <script src="js/Matcher.min.js" type="text/javascript"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="css/bulma-0.7.5.min.css">
@@ -17,7 +18,7 @@
                 FingerprintWebClient Demo Page
             </h1>
             <h3 class="subtitle">
-                This demo will launch the application that captures a fingerprint image from a biometric device (local port 42000).
+                Capture fingerprints from biometric devices and get them in the web. The local component uses local port 42000.
             </h3>
         </div>
     </div>
@@ -30,13 +31,39 @@
         </h3>
 
         <ol>
-            <li>Uninstall previous version (if present)</li>
-            <li>Download installer: <a href="data/core42fp-1.0.0.exe" target="_blank">core42fp-1.0.0</a></li>
-            <li>Execute installer</li>
+            <li>Download and install desktop components: <a href="data/core42fp-1.1.exe" target="_blank">core42fp</a></li>
+            <li>Click read devices to get the list of supported devices</li>
+            <li>Select device</li>
+            <li>Capture fingerprint</li>
         </ol>
-        <!--<p>
-            <button class="button" onclick="doClick()">Launch application</button>
-        </p>-->
+    </div>
+</section>
+
+<section class="section">
+    <div class="content">
+        <h3>
+            Demo
+        </h3>
+
+        <div class="columns">
+            <div class="column is-6">
+                <div class="field is-grouped">
+                    <div class="control">
+                        <button class="button is-primary" onclick="doReadSupportedDevices(document.querySelector('#supported-devices'))">Read supported devices</button>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="label">Supported devices</label>
+                    <div class="control">
+                        <select id="supported-devices">
+                            <option></option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="columns">
             <div class="column is-3 is-desktop">
                 <div class="field">
@@ -217,6 +244,25 @@
         } else {
             body.appendChild(response);
         }
+    }
+
+    function doReadSupportedDevices(select) {
+        ReadConfigNativeApp.readJSON("devices.api.json")
+            .then((config) => {
+                let devices = config.devices;
+                console.log(devices);
+                for (let i = 0; i < devices.length; i++) {
+                    let device = devices[i];
+                    let option = document.createElement("option");
+                    option.value = device.dir + "/" + device.exe;
+                    option.innerText = device.name;
+                    select.appendChild(option);
+                }
+            }).catch((error) => {
+                console.log(error);
+                changeOutput("Error", error);
+            }
+        );
     }
 
     function doCapture(img, input) {

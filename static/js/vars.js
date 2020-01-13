@@ -1,1 +1,1 @@
-"use strict";var vars={VERSION:"1.0.0",URI_PROTOCOL:"core42",DEBUG:true};module.exports=vars;
+"use strict";var vars={VERSION:"1.1",URI_PROTOCOL:"core42",DEVICE_API_NATIVE_APP_PORT:42000,DEBUG:true};module.exports=vars;

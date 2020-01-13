@@ -42,16 +42,19 @@ class FPApplication {
                 //const launcherArgs = {port: 42000, timeout: 5000, child: "desklayer_server"};
                 const launcherArgs = {port: port, timeout: timeout, child: child};
                 // try connections to local ws until timeout
-                let nativeApplication = new NativeApplication(function () {
-                    nativeApplication.send(JSON.stringify(applicationArgs));
-                }, function (message) {
-                    resolve(message);
-                }, function (error) {
-                    reject(error);
-                }, function () {
-                    const uri = URIUtils.buildUri(vars.URI_PROTOCOL, "fp", launcherArgs);
-                    URIUtils.launch(uri);
-                }, 250);
+                let nativeApplication = new NativeApplication(
+                    function () {
+                        nativeApplication.send(JSON.stringify(applicationArgs));
+                    }, function (message) {
+                        resolve(message);
+                    }, function () {
+                        // ignored
+                    }, function (error) {
+                        reject(error);
+                    }, function () {
+                        const uri = URIUtils.buildUri(vars.URI_PROTOCOL, "fp", launcherArgs);
+                        URIUtils.launch(uri);
+                    }, 250);
                 nativeApplication.connect(launcherArgs, (new Date).getTime(), false);
             } catch (e) {
                 reject(e);
