@@ -6,7 +6,7 @@
 // var querystring = require('querystring');
 // npm i --save https
 const https = require('https');
-const FPApplication = require('./FPApplication');
+const FPApplication = require('./DevicesApiNativeApp');
 
 class Matcher {
     static match(wsq1, wsq2) {

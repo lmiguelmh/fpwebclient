@@ -31,7 +31,7 @@
         </h3>
 
         <ol>
-            <li>Download and install desktop components: <a href="data/core42fp-1.1.exe" target="_blank">core42fp</a></li>
+            <li>Download and install desktop components: <a href="data/core42fp-1.2.7z" target="_blank">core42fp</a></li>
             <li>Click read devices to get the list of supported devices</li>
             <li>Select device</li>
             <li>Capture fingerprint</li>
@@ -49,7 +49,7 @@
             <div class="column is-6">
                 <div class="field is-grouped">
                     <div class="control">
-                        <button class="button is-primary" onclick="doReadSupportedDevices(document.querySelector('#supported-devices'))">Read supported devices</button>
+                        <button class="button is-primary" onclick="doReadSupportedDevices()">Read supported devices</button>
                     </div>
                 </div>
 
@@ -76,7 +76,9 @@
 
                 <div class="field is-grouped">
                     <div class="control">
-                        <button class="button" onclick="doCapture(document.querySelector('#fp1'), document.querySelector('#wsq1'))">Capture fingerprint</button>
+                        <button class="button" onclick="doCaptureFingerprint(getDeviceInput(document.querySelector('#supported-devices'), 'PULSE SU DEDO'), document.querySelector('#fp1'), document.querySelector('#wsq1'))">Capture
+                            fingerprint
+                        </button>
                     </div>
                 </div>
             </div>
@@ -92,7 +94,9 @@
 
                 <div class="field is-grouped">
                     <div class="control">
-                        <button class="button" onclick="doCapture(document.querySelector('#fp2'), document.querySelector('#wsq2'))">Capture fingerprint</button>
+                        <button class="button" onclick="doCaptureFingerprint(getDeviceInput(document.querySelector('#supported-devices'), 'PULSE SU DEDO'), document.querySelector('#fp2'), document.querySelector('#wsq2'))">Capture
+                            fingerprint
+                        </button>
                     </div>
                 </div>
             </div>
@@ -162,14 +166,14 @@
 </section>
 
 <script>
-    function doChangeMessage(checkbox) {
-        let message = document.querySelector("#message");
-        if (checkbox.checked) {
-            message.value = '{"command": ".\\\\dummy.exe", "message": "wsq.wsq"}';
-        } else {
-            message.value = '{"command": ".\\\\futronic\\\\x64\\\\futronic.exe", "message": "PULSE SU MEÑIQUE IZQUIERDO"}';
-        }
-    }
+    // function doChangeMessage(checkbox) {
+    //     let message = document.querySelector("#message");
+    //     if (checkbox.checked) {
+    //         message.value = '{"command": ".\\\\dummy.exe", "message": "wsq.wsq"}';
+    //     } else {
+    //         message.value = '{"command": ".\\\\futronic\\\\x64\\\\futronic.exe", "message": "PULSE SU MEÑIQUE IZQUIERDO"}';
+    //     }
+    // }
 
     function printObjectOnDiv(object, imgfields) {
         var div = document.createElement("div");
@@ -195,43 +199,43 @@
         return div;
     }
 
-    function doClick() {
-        let child = document.querySelector("#use-dummy").checked ? "dummy" : "core42-device";
-        let port = document.querySelector("#use-dummy").checked ? 42424 : 42000;
-        let message = document.querySelector("#message");
-        FPApplication.execute(JSON.parse(message.value), child, port)
-            .then((response) => {
-                console.log(response);
-
-                let container = document.querySelector("#output");
-                container.style.display = "block";
-                //container.classList.add();
-                let header = document.querySelector("#message-header");
-                header.innerHTML = "Salida";
-                let body = document.querySelector("#messsage-body");
-                // body.innerHTML = response;
-
-                try {
-                    let o = JSON.parse(response);
-                    body.appendChild(printObjectOnDiv(o, ["wsq"]));
-                } catch (e) {
-                    // todo child must send messages in a json object!
-                    body.innerHTML = response;
-                }
-
-            }).catch((error) => {
-                console.log(error);
-
-                let container = document.querySelector("#output");
-                container.style.display = "block";
-                //container.classList.add();
-                let header = document.querySelector("#message-header");
-                header.innerHTML = "Error";
-                let body = document.querySelector("#messsage-body");
-                body.innerHTML = error;
-            }
-        );
-    }
+    // function doClick() {
+    //     let child = document.querySelector("#use-dummy").checked ? "dummy" : "core42-device";
+    //     let port = document.querySelector("#use-dummy").checked ? 42424 : 42000;
+    //     let message = document.querySelector("#message");
+    //     FPApplication.execute(JSON.parse(message.value), child, port)
+    //         .then((response) => {
+    //             console.log(response);
+    //
+    //             let container = document.querySelector("#output");
+    //             container.style.display = "block";
+    //             //container.classList.add();
+    //             let header = document.querySelector("#message-header");
+    //             header.innerHTML = "Salida";
+    //             let body = document.querySelector("#messsage-body");
+    //             // body.innerHTML = response;
+    //
+    //             try {
+    //                 let o = JSON.parse(response);
+    //                 body.appendChild(printObjectOnDiv(o, ["wsq"]));
+    //             } catch (e) {
+    //                 // todo child must send messages in a json object!
+    //                 body.innerHTML = response;
+    //             }
+    //
+    //         }).catch((error) => {
+    //             console.log(error);
+    //
+    //             let container = document.querySelector("#output");
+    //             container.style.display = "block";
+    //             //container.classList.add();
+    //             let header = document.querySelector("#message-header");
+    //             header.innerHTML = "Error";
+    //             let body = document.querySelector("#messsage-body");
+    //             body.innerHTML = error;
+    //         }
+    //     );
+    // }
 
     function changeOutput(title, response) {
         let container = document.querySelector("#output");
@@ -246,7 +250,8 @@
         }
     }
 
-    function doReadSupportedDevices(select) {
+    function doReadSupportedDevices() {
+        let select = document.querySelector('#supported-devices');
         ReadConfigNativeApp.readJSON("devices.api.json")
             .then((config) => {
                 let devices = config.devices;
@@ -259,41 +264,36 @@
                     select.appendChild(option);
                 }
             }).catch((error) => {
-                console.log(error);
+                console.error(error);
                 changeOutput("Error", error);
             }
         );
     }
 
-    function doCapture(img, input) {
-        let fpconfig = {
-            "command": ".\\futronic\\futronic.exe",
-            "message": "PRESIONE SU ÍNDICE EN EL DISPOSITIVO"
-        };
-        //
+    function getDeviceInput(select, message) {
+        let command = select.options[select.selectedIndex].value;
+        if (command) {
+            return {
+                command: command,
+                message: message
+            };
+        } else {
+            throw Error("DeviceNotSelectedException");
+        }
+    }
+
+    function doCaptureFingerprint(captureArgs, img, input) {
         img.src = "img/128x128.png";
         input.value = "";
         //
-        FPApplication.execute(fpconfig, "devices.api", 42000)
+        DevicesApiNativeApp.captureFingerprint(captureArgs)
             .then((response) => {
                 console.log(response);
-
-                try {
-                    let o = JSON.parse(response);
-                    if (o["exitcode"] === "0") {
-                        img.src = "data:image/jpeg;base64," + o["jpg"];
-                        input.value = o["wsq"];
-                    } else {
-                        changeOutput("Error", printObjectOnDiv(o, []));
-                    }
-                } catch (e) {
-                    // todo child must send messages in a json object!
-                    console.log(e);
-                    changeOutput("Error", response);
-                }
+                img.src = "data:image/jpeg;base64," + response["jpg"];
+                input.value = response["wsq"];
 
             }).catch((error) => {
-                console.log(error);
+                console.error(error);
                 changeOutput("Error", error);
             }
         );

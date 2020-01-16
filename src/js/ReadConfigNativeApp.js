@@ -16,9 +16,7 @@ class ReadConfigNativeApp {
     static readJSON(config) {
         return new Promise((resolve, reject) => {
             try {
-                // launch uri protocol
                 const launcherArgs = {port: PORT, timeout: TIMEOUT, child: CHILD};
-                // try connections to local ws until timeout
                 let buffer = "";
                 let errorEvent = false;
                 let nativeApplication = new NativeApplication(
