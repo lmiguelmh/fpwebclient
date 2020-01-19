@@ -6,45 +6,51 @@
 const vars = require('./vars');
 const messages = require('./messages');
 const URIUtils = require('./URIUtils');
-const NativeApplication = require('./NativeApplication');
+const SimpleNativeApplication = require('./SimpleNativeApplication');
 
 const PORT = 42001;
-const TIMEOUT = 5000;
 const CHILD = "read.config.exe";
 
 class ReadConfigNativeApp {
-    static readJSON(config) {
+    static readJSON(path) {
         return new Promise((resolve, reject) => {
             try {
-                const launcherArgs = {port: PORT, timeout: TIMEOUT, child: CHILD};
-                let buffer = "";
-                let errorEvent = false;
-                let nativeApplication = new NativeApplication(
+                const localAppUrl = `ws://localhost:${PORT}/`;
+                let result = "";
+                let errorResult = false;
+                let nativeApplication = new SimpleNativeApplication(
                     function () {
-                        nativeApplication.send(config);
+                        nativeApplication.send(path);
 
                     }, function (message) {
-                        buffer += message + "\n";
+                        result += message + "\n";
 
                     }, function () {
-                        if (!errorEvent) {
+                        if (!errorResult) {
                             try {
-                                resolve(JSON.parse(buffer));
+                                resolve(JSON.parse(result));
                             } catch (e) {
                                 reject(e);
                             }
+                        } else {
+                            reject(result);
                         }
 
                     }, function (error) {
-                        errorEvent = true;
-                        reject(error);
+                        errorResult = true;
+                        result = error;
+                    });
+                nativeApplication.connect(localAppUrl);
 
-                    }, function () {
-                        const uri = URIUtils.buildUri(vars.URI_PROTOCOL, "fp", launcherArgs);
+                // launch URI if no connection!
+                setTimeout(() => {
+                    if (!nativeApplication.connection) {
+                        const taskTrayArgs = {port: PORT, child: CHILD};
+                        const uri = URIUtils.buildUri(vars.URI_PROTOCOL, "fp", taskTrayArgs);
                         URIUtils.launch(uri);
+                    }
+                }, 500);
 
-                    }, 250);
-                nativeApplication.connect(launcherArgs, (new Date).getTime(), false);
             } catch (e) {
                 reject(e);
             }

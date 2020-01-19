@@ -8,7 +8,8 @@
   },
   "scripts": {
     "compile": "node_modules/.bin/babel --no-comments --minified src/js --out-dir static/js && browserify static/js/DevicesApiNativeApp.js -o static/js/DevicesApiNativeApp.min.js && browserify static/js/Matcher.js -o static/js/Matcher.min.js && browserify static/js/ReadConfigNativeApp.js -o static/js/ReadConfigNativeApp.min.js",
-    "server": "cd static && httpserver"
+    "server": "cd static && httpserver",
+    "test": "start chrome http://localhost:8080/index.html"
   },
   "author": "lmiguelmh",
   "license": "lmiguelmh",
